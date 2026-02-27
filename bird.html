@@ -11,8 +11,24 @@
     <p onclick="help()">Click for help.</p>
     <p id="help">Help report</p>
 
+    <div id="gameField" class="container">
+    </div>
+
     <script>
-        function help() { /* */ }
-    </script>
+        let gameField = document.getElementById("gameField");
+        for (let row = 0; row < 5; row++) {
+            let rowDiv = document.createElement("div");
+            rowDiv.className = "row d-flex";
+            for (let col = 0; col < 7; col++) {
+                let img = document.createElement("img");
+                img.src = "bush.jpg"; 
+                img.width = 100;
+                img.height = 100;
+                rowDiv.appendChild(img);
+            }
+            gameField.appendChild(rowDiv);
+        }
+
+</script>    
 </body>
 </html>
