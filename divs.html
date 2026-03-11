@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Andrew Atkins builds list with divs</title>
+    <style>
+        .flex-container { display: flex; flex-direction: row; background-color: red; flex-wrap: wrap; }
+        .divlist { background-color: #f1f1f1; margin: 10px; padding: 20px; font-size: 30px; }
+    </style>
+</head>
+<body>
+    <h2>Andrew Atkins builds list with divs</h2>
+    <input type="text" id="inputText">
+    <button onclick="addEnd()">Add end</button>
+    <button onclick="addFront()">Add front</button>
+    <button onclick="remove()">Remove</button>
+    <button onclick="shuffle()">Shuffle</button>
+
+    <div class="flex-container" id="container">
+        <div class="divlist">Item 1</div>
+        <div class="divlist">Item 2</div>
+        <div class="divlist">Item 3</div>
+    </div>
+
+    <script>
+        function addEnd() {
+            let container = document.getElementById("container");
+            let input = document.getElementById("inputText").value;
+            let newDiv = document.createElement("div");
+            newDiv.innerHTML = input; newDiv.className = "divlist";
+            container.appendChild(newDiv);
+        }
+
+        function addFront() {
+            let container = document.getElementById("container");
+            let input = document.getElementById("inputText").value;
+            let newDiv = document.createElement("div");
+            newDiv.innerHTML = input; newDiv.className = "divlist";
+            container.insertBefore(newDiv, container.firstChild);
+        }
+
+        function remove() {
+            let items = document.getElementsByClassName("divlist");
+            if (items.length > 1) items[1].remove();
+            else if (items.length === 1) items[0].remove();
+        }
+
+        function shuffle() {
+            let container = document.getElementById("container");
+            let items = document.getElementsByClassName("divlist");
+            if (items.length < 2) return;
+            
+            let idx1 = Math.floor(Math.random() * items.length);
+            let idx2 = Math.floor(Math.random() * items.length);
+            while(idx1 === idx2) idx2 = Math.floor(Math.random() * items.length);
+
+            let node1 = items[idx1];
+            let node2 = items[idx2];
+            let next2 = node2.nextSibling;
+
+            if (node1.nextSibling === node2) container.insertBefore(node2, node1);
+            else {
+                container.insertBefore(node2, node1);
+                container.insertBefore(node1, next2);
+            }
+        }
+    </script>
+</body>
+</html>

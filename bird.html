@@ -5,7 +5,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .game-grid { display: grid; grid-template-columns: repeat(7, 1fr); width: 700px; margin: 0 auto; }
-        img { border: 1px solid #ccc; }
+        img { border: 1px solid #ccc; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -16,7 +16,6 @@
         <p id="score">Score is zero.</p>
         <p onclick="help()" style="cursor:pointer; color: blue; text-decoration: underline;">Click for help.</p>
         <p id="help">Help report</p>
-
         <div id="grid" class="game-grid"></div>
     </div>
 
@@ -27,11 +26,19 @@
         let score = 0;
         let locationsVisited = 0;
         let lastLocation = 0;
-        let statueLocation = 19;
-        let toucanLocation = 14;
-        let lorikeetLocations = [3, 25];
-        let buntingLocations = [2, 5, 11, 20, 21];
         let gameOver = false;
+
+        let statueLocation = Math.floor(Math.random() * 35);
+        let toucanLocation = generateRandomExcluding([statueLocation]);
+        let lorikeetLocations = [generateRandomExcluding([statueLocation, toucanLocation]), generateRandomExcluding([statueLocation, toucanLocation])];
+        let buntingLocations = [];
+        for(let i=0; i<5; i++) buntingLocations.push(generateRandomExcluding([statueLocation, toucanLocation, ...lorikeetLocations, ...buntingLocations]));
+
+        function generateRandomExcluding(excluded) {
+            let rand;
+            do { rand = Math.floor(Math.random() * 35); } while (excluded.includes(rand));
+            return rand;
+        }
 
         const gridElement = document.getElementById("grid");
         for (let i = 0; i < 35; i++) {
@@ -44,11 +51,32 @@
             gridElement.appendChild(img);
         }
 
+        function moveToucan() {
+            let directions = [-7, 7, -1, 1]; 
+            let moved = false;
+            while (!moved) {
+                let dir = directions[Math.floor(Math.random() * directions.length)];
+                let newPos = toucanLocation + dir;
+                let row = Math.floor(toucanLocation / 7);
+                let col = toucanLocation % 7;
+
+                if (newPos >= 0 && newPos < 35) {
+                    if (Math.abs(dir) === 1 && Math.floor(newPos / 7) !== row) continue;
+                    toucanLocation = newPos;
+                    moved = true;
+                }
+            }
+        }
+
         function check(position) {
             if (gameOver) return;
 
+            if (position === toucanLocation) {
+                gameOver = true;
+                document.getElementById("help").innerHTML = "The toucan found you! Game Over.";
+            }
+
             let imgElement = document.getElementById(ids[position]);
-            
             if (position === statueLocation) {
                 imgElement.src = "statue.jpg";
                 gameOver = true;
@@ -69,47 +97,23 @@
             locationsVisited++;
             lastLocation = position;
             imgElement.onclick = null;
+            
+            if(!gameOver) moveToucan();
 
             document.getElementById("locations").innerHTML = "Number of locations checked is " + locationsVisited + ".";
             document.getElementById("score").innerHTML = "Score is " + score + ".";
         }
 
         function help() {
-            let row = Math.floor(lastLocation / 7);
-            let col = lastLocation % 7;
+            let neighbors = [(lastLocation + 1) % 35, (lastLocation + 34) % 35, (lastLocation + 7) % 35, (lastLocation + 28) % 35];
+            for (let n of neighbors) { if (buntingLocations.includes(n)) { document.getElementById("help").innerHTML = "cheep"; return; } }
+            
+            let lastRow = Math.floor(lastLocation / 7), lastCol = lastLocation % 7;
+            let tRow = Math.floor(toucanLocation / 7), tCol = toucanLocation % 7;
+            let sRow = Math.floor(statueLocation / 7), sCol = statueLocation % 7;
 
-            let neighbors = [
-                (lastLocation + 1) % 35,
-                (lastLocation + 34) % 35,
-                (lastLocation + 7) % 35,
-                (lastLocation + 28) % 35
-            ];
-
-            for (let n of neighbors) {
-                if (buntingLocations.includes(n)) {
-                    document.getElementById("help").innerHTML = "cheep";
-                    return;
-                }
-            }
-
-            let lastRow = Math.floor(lastLocation / 7);
-            let lastCol = lastLocation % 7;
-            let toucanRow = Math.floor(toucanLocation / 7);
-            let toucanCol = toucanLocation % 7;
-
-            if (Math.abs(lastRow - toucanRow) <= 1 && Math.abs(lastCol - toucanCol) <= 1) {
-                document.getElementById("help").innerHTML = "caw";
-                return;
-            }
-
-            let statueRow = Math.floor(statueLocation / 7);
-            let statueCol = statueLocation % 7;
-
-            if (Math.abs(lastRow - statueRow) <= 1 && Math.abs(lastCol - statueCol) <= 1) {
-                document.getElementById("help").innerHTML = "thrrum";
-                return;
-            }
-
+            if (Math.abs(lastRow - tRow) <= 1 && Math.abs(lastCol - tCol) <= 1) { document.getElementById("help").innerHTML = "caw"; return; }
+            if (Math.abs(lastRow - sRow) <= 1 && Math.abs(lastCol - sCol) <= 1) { document.getElementById("help").innerHTML = "thrrum"; return; }
             document.getElementById("help").innerHTML = "silence";
         }
     </script>
